@@ -1,11 +1,14 @@
 import struct
-
+import os
 def main():
     print("Clean COFF Header Timestamp")
     pathToFile = input("Path to file: ").strip()
-    
+
     try:
         with open(pathToFile, "rb+") as f:
+            # Check Size first
+            if(os.path.getsize(pathToFile) > 64):
+                print(f"File {pathToFile} biggest than 64 bits. Start.")
             # Check DOS Header Signature ('MZ')
             if f.read(2) != b"MZ":
                 print("Error: Not a valid DOS/PE executable.")
