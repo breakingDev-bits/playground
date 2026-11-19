@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Привет писька</title>
+</head>
+<body>
+    <h1>Привет писька</h1>  
+    <div class="counter"></div>
+    <button onclick="incrementCounter()">Нажми на мя</button>
+    <script>
+        async function incrementCounter() {
+            const counterEl = document.querySelector(".counter");
+            try {
+                const res = await fetch("/hello_dick");
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                counterEl.textContent = await res.text();
+            } catch (err) {
+                counterEl.textContent = `Ошибка: ${err.message}`;
+            }
+        }
+        async function loadCssFromServer(url = "http://127.0.0.1:8080/style.css") {
+            let link = document.querySelector('link[data-dynamic-css="true"]');
+            if (!link) {
+                link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.dataset.dynamicCss = "true";
+                document.head.appendChild(link);
+            }
+            link.href = `${url}?t=${Date.now()}`;
+        }
+
+        async function updateCounter() {
+            const counterEl = document.querySelector(".counter");
+            try {
+                const res = await fetch("/update_dick");
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                counterEl.textContent = await res.text();
+            } catch (err) {
+                counterEl.textContent = `Ошибка: ${err.message}`;
+            }
+        }
+
+        setInterval(updateCounter, 1);
+        updateCounter();
+        loadCssFromServer();
+    </script>
+</body>
+</html>
