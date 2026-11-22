@@ -1,6 +1,7 @@
 use rand::RngExt;
 use std::thread;
 use std::time::Duration;
+use std::io;
 
 struct StepData {
     prediction: f64,
@@ -26,20 +27,16 @@ fn study(steps: usize, lr: f64) -> StepData {
     let mut error_sum = 0.0;
 
     for step_i in 1..=steps {
-        let x0 = rng.random_range(0..10);
-        let x1 = rng.random_range(0..10);
+        let x0 = rng.random_range(0.0..10.0);
+        let x1 = rng.random_range(0.0..10.0);
         let res = x0 + x1;
 
-        let x0_f = x0 as f64;
-        let x1_f = x1 as f64;
-        let target = res as f64;
-
-        step.prediction = x0_f * step.w0 + x1_f * step.w1 + step.bias;
-        step.error = target - step.prediction;
+        step.prediction = x0 * step.w0 + x1 * step.w1 + step.bias;
+        step.error = res - step.prediction;
         error_sum += step.error.abs();
 
-        step.w0 += lr * step.error * x0_f;
-        step.w1 += lr * step.error * x1_f;
+        step.w0 += lr * step.error * x0;
+        step.w1 += lr * step.error * x1;
         step.bias += lr * step.error;
 
         if step_i % 1000 == 0 || step_i == 1 {
@@ -68,11 +65,39 @@ fn main() {
         step.w0, step.w1, step.bias, step.avg_abs_error
     );
 
-    let test_x0 = 1000000.0;
-    let test_x1 = 0.001;
-    let test_pred = test_x0 * step.w0 + test_x1 * step.w1 + step.bias;
-    println!(
-        "Test {} + {} = {} -> prediction: {:.2}",
-        test_x0, test_x1, test_x0 + test_x1, test_pred
-    );
+    loop {
+        println!("Press CTRL+C if you want exit.\n");
+        
+        let mut x0_str = String::new();
+        println!("Введи первое число или exit для выхода: ");
+        io::stdin().read_line(&mut x0_str).expect("Не удалось прочитать ввод");
+
+        if x0_str.eq_ignore_ascii_case("exit\n") || x0_str.eq_ignore_ascii_case("quit\n") {
+            break;
+        }
+        let x0: f64 = match x0_str.trim().parse() {
+            Ok(num) => num,
+            Err(_) => {
+                println!("Ошибка: введите корректное число для x0!\n");
+                continue;
+            }
+        };
+
+        let mut x1_str = String::new();
+        println!("Введи второе число: ");
+        io::stdin().read_line(&mut x1_str).expect("Не удалось прочитать ввод");
+        let x1: f64 = match x1_str.trim().parse() {
+            Ok(num) => num,
+            Err(_) => {
+                println!("Ошибка: введите корректное число для x1!\n");
+                continue;
+            }
+        };
+
+        let prediction = x0 * step.w0 + x1 * step.w1 + step.bias;
+        println!(
+            "Test {} + {} = {} -> prediction: {:.2}",
+            x0, x1, x0 + x1, prediction
+        );
+    }
 }
